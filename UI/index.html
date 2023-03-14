@@ -1,0 +1,65 @@
+<!DOCTYPE html>
+<html lang="en">
+    <head>
+        <title>Пособник спамер</title>
+        <link rel="stylesheet" href="./index.css"/>
+        <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@4.0.0/dist/css/bootstrap.min.css" integrity="sha384-Gn5384xqQ1aoWXA+058RXPxPg6fy4IWvTNh0E263XmFcJlSAwiGgFAW/dAiS6JXm" crossorigin="anonymous">
+    </head>
+    <body>
+        <button id="form_open_button" type="button" class="btn btn-primary">+</button>
+        <div id="inputs_form">
+            <div class="input-group mb-3">
+                <div class="input-group-prepend">
+                  <span class="input-group-text" id="inputGroup-sizing-default">Прізвище</span>
+                </div>
+                <input id="surname_inp" name="surname" value="" type="text" class="form-control" aria-label="Default" aria-describedby="inputGroup-sizing-default">
+            </div>
+            <div class="input-group mb-3">
+                <div class="input-group-prepend">
+                  <span class="input-group-text" id="inputGroup-sizing-default">Ім'я</span>
+                </div>
+                <input id="name_inp" name="name" value="" type="text" class="form-control" aria-label="Default" aria-describedby="inputGroup-sizing-default">
+            </div>
+            <div class="input-group mb-3">
+                <div class="input-group-prepend">
+                  <span class="input-group-text" id="inputGroup-sizing-default">По-батькові</span>
+                </div>
+                <input id="lastname_inp" name="lastname" value="" type="text" class="form-control" aria-label="Default" aria-describedby="inputGroup-sizing-default">
+            </div>
+            <div class="input-group mb-3">
+                <div class="input-group-prepend">
+                  <span class="input-group-text" id="inputGroup-sizing-default">Електронна адреса</span>
+                </div>
+                <input id="email_inp" name="email" value="" type="text" class="form-control" aria-label="Default" aria-describedby="inputGroup-sizing-default">
+            </div>
+            <button id="add_button" type="button" class="btn btn-primary">Add</button>
+            <button id="close_button" type="button" class="btn btn-danger">Close</button>
+        </div>
+        <table class="table">
+            <thead class="thead-light">
+              <tr>
+                <th scope="col">#</th>
+                <th scope="col">Прізвище</th>
+                <th scope="col">Ім'я</th>
+                <th scope="col">По-батькові</th>
+                <th scope="col">Електронна адреса</th>
+                <th scope="col">Дія</th>
+              </tr>
+            </thead>
+            <tbody id="table_body">
+              <tr>
+                <th scope="row">1</th>
+                <td>Зимівець</td>
+                <td>Руслан</td>
+                <td>Олегович</td>
+                <td>gogi_vasuil@ukr.net</td>
+                <td>
+                    <button type="button" class="btn btn-danger">Delete</button>
+                </td>
+              </tr>
+            </tbody>
+          </table>
+          <script src="./list-editor.js"></script>
+    </body>
+
+</html>
