@@ -1,4 +1,8 @@
 "use strict";
+
+const PORT = 8000;
+const API = `http://localhost:${PORT}`;
+
 const table_body = document.getElementById("table_body");
 const form_open_button = document.getElementById("form_open_button");
 const add_button = document.getElementById("add_button");
@@ -10,8 +14,15 @@ const name_inp = document.getElementById("name_inp");
 const lastname_inp = document.getElementById("lastname_inp");
 const email_inp = document.getElementById("email_inp");
 
+const notification = document.getElementById("notification");
+
 const delete_button_text = "Delete";
-const user_data = {};
+let user_data = {};
+
+const NotificationTypes = {
+    success: "success",
+    error  : "danger",
+}
 
 function create_text_item(text)
 {
@@ -62,6 +73,12 @@ form_open_button.addEventListener("click", event => {
     clearFields();
 });
 
+function closeForm()
+{
+    inputs_form.style.display = "none";
+    clearFields();
+}
+
 function changeField(event)
 {
     const {
@@ -83,19 +100,63 @@ function addItem()
     console.log("user_data:", user_data);
     add_table_item(1, ...Object.values(user_data));
     inputs_form.style.display = "none";
-    clearFields();
 }
 
-function closeForm()
+function validateInputFields()
 {
-    inputs_form.style.display = "none";
-    clearFields();
+    return !(surname_inp.value === ""   ||
+            name_inp.value === ""       ||
+            lastname_inp.value === ""   ||
+            email_inp.value === "");
 }
+
+function notify(text, type)
+{
+    notification.style.display = "flex";
+    notification.innerText = text;
+    notification.setAttribute("class", `notification_${type}`);
+    const tm = setTimeout(() => {
+        notification.style.display = "none";
+        clearTimeout(tm);
+    }, 1000);
+}
+
+function clear_user_data()
+{
+    user_data = {};
+}
+
+function addNewMemberAction()
+{
+    fetch(`${API}/user`, {
+        method: "POST", 
+        headers: {"content-type": "application/json"}, 
+        body: JSON.stringify(user_data)
+    });
+    clear_user_data();
+}
+
+function onAddButton()
+{   
+    if(validateInputFields())
+    {
+        addItem();
+        clearFields();
+        notify("Success!", NotificationTypes["success"]);
+        addNewMemberAction();
+    }
+    else
+    {
+        notify("Invalid input!", NotificationTypes["error"]);
+    }
+}
+
+
 
 surname_inp.addEventListener("change", changeField);
 name_inp.addEventListener("change", changeField);
 lastname_inp.addEventListener("change", changeField);
 email_inp.addEventListener("change", changeField);
 
-add_button.addEventListener("click", addItem);
+add_button.addEventListener("click", onAddButton);
 close_button.addEventListener("click", closeForm);

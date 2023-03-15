@@ -31,3 +31,22 @@ body {
     right: 20px;
     bottom: 20px;
 }
+
+#notification {
+    position: fixed;
+    padding: 5px;
+    display: none;
+    border-radius: 5px;
+    top: 20px;
+    color: white;
+    transition: .3;
+}
+
+.notification_danger {
+    background-color: red;
+}
+
+.notification_success {
+    background-color: green;
+}
+/* .notification_danger {} */
