@@ -179,7 +179,7 @@ function addNewMemberAction()
 
 function addItem()
 {
-    add_table_item(1, ...Object.values(user_data));
+    add_table_item(1, surname_inp.value, name_inp.value, lastname_inp.value, email_inp.value);
     closeForm();
 }
 
@@ -234,7 +234,12 @@ function dbRefreshListOfUsers()
     getAllUsers()
         .then(res => res.json())
         .then(users => {
-            addUsers(users);
+            const sorted = users.sort((u1, u2) => {
+                if(u1.email < u2.email) return -1;
+                if(u1.email > u2.email) return 1;
+                return 0;
+            })
+            addUsers(sorted);
         });
 }
 

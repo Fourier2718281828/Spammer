@@ -7,6 +7,7 @@
     </head>
     <body>
         <button id="form_open_button" type="button" class="btn btn-primary">+</button>
+        <button id="input_letter_button" type="button" class="btn btn-primary">Send</button>
         <div id="inputs_form">
             <div class="input-group mb-3">
                 <div class="input-group-prepend">
@@ -36,6 +37,18 @@
             <button id="edit_button" type="button" class="btn btn-primary">Edit</button>
             <button id="close_button" type="button" class="btn btn-danger">Close</button>
         </div>
+
+        <div id="message_sender">
+          <div class="input-group">
+            <div class="input-group-prepend">
+              <span class="input-group-text">Your letter</span>
+            </div>
+            <textarea id="letter_area" class="form-control" aria-label="With textarea"></textarea>
+          </div>
+          <button id="send_letter" type="button" class="btn btn-primary">Send</button>
+          <button id="close_letter_button" type="button" class="btn btn-danger">Close</button>
+        </div>
+
         <table class="table">
             <thead class="thead-light">
               <tr>
@@ -49,16 +62,6 @@
               </tr>
             </thead>
             <tbody id="table_body">
-              <!-- <tr>
-                <th scope="row">1</th>
-                <td>Зимівець</td>
-                <td>Руслан</td>
-                <td>Олегович</td>
-                <td>gogi_vasuil@ukr.net</td>
-                <td>
-                    <button type="button" class="btn btn-danger">Delete</button>
-                </td>
-              </tr> -->
             </tbody>
           </table>
           <div id="notification">

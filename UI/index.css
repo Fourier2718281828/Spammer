@@ -22,6 +22,25 @@ body {
     border: rgba(100, 100, 100, .6);
 }
 
+#message_sender {
+    display: none;
+    flex-direction: column;
+    position: fixed;
+    width: 80vw;
+    top: 70px;
+    border-radius: 10px;
+    background-color: white;
+    overflow: hidden;
+    box-shadow: 20px 20px 40px rgba(0, 0, 0, 0.15);
+    padding: 10px 15px;
+    border: rgba(100, 100, 100, .6);
+}
+
+#letter_area {
+    resize: none;
+    height: 50vh;
+}
+
 #add_button {
     margin-bottom: 15px;
     justify-content: center;
@@ -34,11 +53,30 @@ body {
     justify-content: center;
     align-items: center;
     display: none;
+} 
+
+#send_letter {
+    margin-bottom: 15px;
+    margin-top: 15px;
+    justify-content: center;
+    align-items: center;
 }
+
+#close_letter_button {
+    margin-bottom: 15px;
+    justify-content: center;
+    align-items: center;
+} 
 
 #form_open_button {
     position: fixed;
     right: 20px;
+    bottom: 20px;
+}
+
+#input_letter_button {
+    position: fixed;
+    right: 80px;
     bottom: 20px;
 }
 
@@ -51,7 +89,6 @@ body {
     color: white;
     transition: .3;
 }
-
 
 .notification_danger {
     background-color: red;
