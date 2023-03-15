@@ -2,6 +2,9 @@
 
 const PORT = 8000;
 const API = `http://localhost:${PORT}`;
+const delete_button_text = "Delete";
+let user_data = {};
+const notification_time = 1000;
 
 const table_body = document.getElementById("table_body");
 const form_open_button = document.getElementById("form_open_button");
@@ -16,13 +19,11 @@ const email_inp = document.getElementById("email_inp");
 
 const notification = document.getElementById("notification");
 
-const delete_button_text = "Delete";
-let user_data = {};
 
-const NotificationTypes = {
+const NotificationTypes = Object.freeze({
     success: "success",
     error  : "danger",
-}
+});
 
 function create_text_item(text)
 {
@@ -68,18 +69,29 @@ function add_table_item(num, surname, name, lastname, email)
     table_body.appendChild(tr);
 }
 
-form_open_button.addEventListener("click", event => {
-    inputs_form.style.display = "flex";
-    clearFields();
-});
-
-function closeForm()
+function hide(doc_elem)
 {
-    inputs_form.style.display = "none";
+    doc_elem.style.display = "none";
+}
+
+function show(doc_elem)
+{
+    doc_elem.style.display = "flex";
+}
+
+function showForm()
+{
+    show(inputs_form);
     clearFields();
 }
 
-function changeField(event)
+function closeForm()
+{
+    hide(inputs_form);
+    clearFields();
+}
+
+function onFieldChanged(event)
 {
     const {
         name, value
@@ -89,36 +101,42 @@ function changeField(event)
 
 function clearFields()
 {
-    surname_inp.value = "";
-    name_inp.value = "";
-    lastname_inp.value = "";
-    email_inp.value = "";
+    surname_inp.value   = "";
+    name_inp.value      = "";
+    lastname_inp.value  = "";
+    email_inp.value     = "";
 }
 
 function addItem()
 {
-    console.log("user_data:", user_data);
     add_table_item(1, ...Object.values(user_data));
-    inputs_form.style.display = "none";
+    hide(inputs_form);
 }
 
 function validateInputFields()
 {
-    return !(surname_inp.value === ""   ||
-            name_inp.value === ""       ||
-            lastname_inp.value === ""   ||
-            email_inp.value === "");
+    return !(
+                surname_inp.value  === ""  ||
+                name_inp.value     === ""  ||
+                lastname_inp.value === ""  ||
+                email_inp.value    === ""
+            );
+}
+
+function notification_setup(text, type)
+{
+    notification.innerText = text;
+    notification.setAttribute("class", `notification_${type}`);
 }
 
 function notify(text, type)
 {
-    notification.style.display = "flex";
-    notification.innerText = text;
-    notification.setAttribute("class", `notification_${type}`);
+    notification_setup(text, type);
+    show(notification);
     const tm = setTimeout(() => {
-        notification.style.display = "none";
+        hide(notification);
         clearTimeout(tm);
-    }, 1000);
+    }, notification_time);
 }
 
 function clear_user_data()
@@ -126,13 +144,21 @@ function clear_user_data()
     user_data = {};
 }
 
+function sendQuery(url, queryType, data)
+{
+    return fetch(API + url, {
+        method: queryType, 
+        headers: {"content-type": "application/json"}, 
+        body: JSON.stringify(data)
+    });
+}
+
+//What if server is not running but we add a member?
+//It would be added to the list but not to the db
+//await fetch?
 function addNewMemberAction()
 {
-    fetch(`${API}/user`, {
-        method: "POST", 
-        headers: {"content-type": "application/json"}, 
-        body: JSON.stringify(user_data)
-    });
+    sendQuery("/user", "POST", user_data);
     clear_user_data();
 }
 
@@ -151,12 +177,40 @@ function onAddButton()
     }
 }
 
+function getAllUsers()
+{
+    return sendQuery("/users", "GET");
+}
 
+function addUsers(users)
+{
+    for(let i = 0; i < users.length; ++i)
+    {
+        const user = users[i];  
+        const usurname = user["surname"];
+        const uname = user["name"];
+        const ulastname = user["lastname"];
+        const uemail = user["email"];
+        add_table_item(i + 1, usurname, uname, ulastname, uemail);
+    }
+}
 
-surname_inp.addEventListener("change", changeField);
-name_inp.addEventListener("change", changeField);
-lastname_inp.addEventListener("change", changeField);
-email_inp.addEventListener("change", changeField);
+function refreshListOfUsers()
+{  
+    getAllUsers()
+        .then(res => res.json())
+        .then(users => {
+            addUsers(users);
+        });
+}
 
+surname_inp.addEventListener("change", onFieldChanged);
+name_inp.addEventListener("change", onFieldChanged);
+lastname_inp.addEventListener("change", onFieldChanged);
+email_inp.addEventListener("change", onFieldChanged);
+
+form_open_button.addEventListener("click", showForm);
 add_button.addEventListener("click", onAddButton);
 close_button.addEventListener("click", closeForm);
+
+refreshListOfUsers();

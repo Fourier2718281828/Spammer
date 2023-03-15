@@ -30,7 +30,7 @@ app.post("/user", async (req, res) => {
     }
 });
 
-app.get("/films", async (req, res) => {
+app.get("/users", async (req, res) => {
     try {
         const found = await allRows();
         res.send(found);
