@@ -4,8 +4,9 @@ const PORT = 8000;
 const API = `http://localhost:${PORT}`;
 const delete_button_text = "Delete";
 const edit_button_text = "Edit";
-let user_data = {};
 const notification_time = 1000;
+let user_data = {};
+let user_count = 0;
 
 const table_body = document.getElementById("table_body");
 const form_open_button = document.getElementById("form_open_button");
@@ -179,7 +180,7 @@ function addNewMemberAction()
 
 function addItem()
 {
-    add_table_item(1, surname_inp.value, name_inp.value, lastname_inp.value, email_inp.value);
+    add_table_item(++user_count, surname_inp.value, name_inp.value, lastname_inp.value, email_inp.value);
     closeForm();
 }
 
@@ -240,6 +241,7 @@ function dbRefreshListOfUsers()
                 return 0;
             })
             addUsers(sorted);
+            user_count = sorted.length;
         });
 }
 
