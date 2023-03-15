@@ -24,6 +24,16 @@ body {
 
 #add_button {
     margin-bottom: 15px;
+    justify-content: center;
+    align-items: center;
+    display: none;
+}
+
+#edit_button {
+    margin-bottom: 15px;
+    justify-content: center;
+    align-items: center;
+    display: none;
 }
 
 #form_open_button {
@@ -41,6 +51,7 @@ body {
     color: white;
     transition: .3;
 }
+
 
 .notification_danger {
     background-color: red;

@@ -21,7 +21,6 @@ app.listen(PORT, () => {
 
 app.post("/user", async (req, res) => {
     try {
-        console.log("body: ", req.body)
         await saveRow(req.body);
         res.send("Saved successfully.");
     }
@@ -40,36 +39,35 @@ app.get("/users", async (req, res) => {
     }
 });
 
-app.patch("/film", async (req, res) => {
+app.patch("/user", async (req, res) => {
     try {
         const body = req.body;
-        const id = body.id;
-        if(id === undefined)
-            res.send("Update error: body must contain id field.");
+        const email = body._email;
+        delete body._email;
+        if(email === undefined)
+            res.send("Update error: body must contain email field.");
 
-        const updatedFields = {...body};
-        delete updatedFields.id;
-        const updated = await updateRow(id, updatedFields);
+        const updated = await updateRow(email, body);
 
         if(updated.matchedCount === 0)
-            res.send(`Film with id ${id} does not exist.`);
+            res.send(`User with id ${email} does not exist.`);
         else
-            res.send(`Successful update of film with id ${id}.`);
+            res.send(`Successful update of film with id ${email}.`);
     }
     catch (err) {
         res.send(`Update error: ${ err.message }`);
     }
 });
 
-app.delete("/film/id/:id", async (req, res) => {
+app.delete("/user/email/:email", async (req, res) => {
 
     try {
-        const id = req.params.id;
-        const deleted = await deleteRow(id);
+        const email = req.params.email;
+        const deleted = await deleteRow(email);
         if(deleted.deletedCount === 0)
-            res.send(`Film with id ${id} does not exist.`);
+            res.send(`User with email ${email} does not exist.`);
         else
-            res.send(`Successful delete of film with id ${id}`);
+            res.send(`Successful delete of user with email ${email}`);
     }
     catch (err) {
         res.send(`Delete error: ${ err.message }`);

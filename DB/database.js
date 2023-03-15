@@ -53,17 +53,16 @@ async function allRows()
     return findResult;
 }
 
-async function updateRow(id, newRow)
+async function updateRow(email, updates)
 {
-    const monId = new mongoose.Types.ObjectId(id);
-    const updateResult = await row.updateOne({ _id: monId }, { $set : newRow});
+    const updateResult = await row.findOneAndUpdate({ email }, updates, { new: true });
     return updateResult;
 }
 
-async function deleteRow(id)
+
+async function deleteRow(emailToDelete)
 {
-    const monId = new mongoose.Types.ObjectId(id);
-    const deleteResult = await row.deleteOne({_id : monId});
+    const deleteResult = await row.deleteOne({email : emailToDelete});
     return deleteResult;
 }
 
