@@ -96,7 +96,6 @@ app.delete("/user/email/:email", async (req, res) => {
 
 app.post("/letter", async (req, res) => {
     try {
-        console.log("server body:", req.body);
         const body = req.body;
         const myEmail = body.myEmail;
         const myPassword = body.myPassword;

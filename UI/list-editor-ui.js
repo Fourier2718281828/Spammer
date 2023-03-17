@@ -426,6 +426,9 @@ async function sendLetter(toEmailAddress)
 
 function clearLetterArea()
 {
+    input_email.value = "gogi.vasyil@gmail.com";
+    inputPassword5.value = "gdqhujktksttvfbz";
+    letter_title.value = "";
     letter_area.value = "";
 }
 
@@ -445,16 +448,21 @@ async function onSendLetter()
 {
     if(validateLetterInputs())
     {
+        hide(message_sender);
         let success = true;
         for(let i = 0; i < table_body.children.length; ++i)
         {
             const row = table_body.children[i];
             const toEmail = getEmail(row);
-            success &&= await sendLetter(toEmail);
+            const letterSent = await sendLetter(toEmail);
+            success &&= letterSent;
+            if(letterSent) notify(`Letter sent to ${toEmail}!`, NotificationTypes["success"]);
+            else           notify(`Failed to send to ${toEmail}!`, NotificationTypes["error"]);
         }
 
-        if(success) notify("Success!", NotificationTypes["success"]);
+        if(success) notify("All letters sent!", NotificationTypes["success"]);
         else        notify("Some letters not sent!", NotificationTypes["error"]);
+        clearLetterArea();
     }
     else
     {
