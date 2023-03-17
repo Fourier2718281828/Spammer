@@ -197,10 +197,11 @@ async function sendRequest(url, queryType, notificationErrorText, data)
     }
 }
 
-function addNewMemberAction()
+async function addNewMemberAction()
 {
-    sendRequest("/user", "POST", "Not added.", user_data);
+    const res = await sendRequest("/user", "POST", "Not added.", user_data);
     clear_user_data();
+    return res;
 }
 
 function addItem()
@@ -224,10 +225,17 @@ async function doIfValidInput(func)
 
 function onAddButton()
 {   
-    doIfValidInput( () => {
-        addItem();
-        clearFields();
-        addNewMemberAction();
+    doIfValidInput(async () => {
+        const res = await addNewMemberAction();
+        if(res.ok)
+        {
+            addItem();
+            clearFields();
+        }
+        else
+        {
+            notify("Not added.", NotificationTypes["error"]);
+        }
     });
 }
 
@@ -255,9 +263,9 @@ function addUsers(users)
     }
 }
 
-function dbDeleteRow(email)
+async function dbDeleteRow(email)
 {
-    sendRequest(`/user/email/${email}`, "DELETE", "Not deleted.");
+    return await sendRequest(`/user/email/${email}`, "DELETE", "Not deleted.");
 }
 
 function dbEditRow(email)
@@ -302,12 +310,31 @@ function getEmail(row)
     return getRowChildText(row, 4);
 }
 
-function onRowDelete(event)
+function shiftIndexesStartingWithRow(row, shift)
+{
+    let i = Array.prototype.indexOf.call(table_body.children, row) + 1;
+    for(; i < table_body.children.length; ++i)
+    {
+        table_body.children[i].children[0].innerText = `${i + shift + 1}`;
+    }
+}
+
+async function onRowDelete(event)
 {
     const row = getButtonRow(event.target);
     const email = getEmail(row);
-    dbDeleteRow(email);
-    row.remove();
+    const res = await dbDeleteRow(email);
+    if(res.ok)
+    {
+        shiftIndexesStartingWithRow(row, -1);
+        --user_count;
+        row.remove();
+    }
+    else 
+    {
+        notify("Not deleted!", NotificationTypes["error"]);
+    }
+    
 }
 
 function onRowEdit(event)
