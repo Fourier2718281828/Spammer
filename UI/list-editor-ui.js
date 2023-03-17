@@ -140,7 +140,7 @@ function clearFields()
 
 async function isUniqueEmail(email)
 {
-    const found = await sendRequest(`/user/email/${email}`, "GET", "Server error.");
+    const found = await sendRequest(`/user/email/${email}`, "GET");
     return !found.ok;
 }
 
@@ -157,6 +157,18 @@ async function validateInputFields()
             lastname_inp.value !== ""       &&
             validateEmail(email_inp.value)  &&
             await isUniqueEmail(email_inp.value);
+}
+
+async function validateEditInputFields(currentRow)
+{
+    return  surname_inp.value  !== ""       &&
+            name_inp.value     !== ""       &&
+            lastname_inp.value !== ""       &&
+            validateEmail(email_inp.value)  &&
+            (
+                getEmail(currentRow) === email_inp.value ||
+                await isUniqueEmail(email_inp.value)
+            );
 }
 
 function notification_setup(text, type)
@@ -180,7 +192,7 @@ function clear_user_data()
     user_data = {};
 }
 
-async function sendRequest(url, queryType, notificationErrorText, data)
+async function sendRequest(url, queryType, data)
 {
     try {
         const res = await fetch(API + url, {
@@ -199,7 +211,7 @@ async function sendRequest(url, queryType, notificationErrorText, data)
 
 async function addNewMemberAction()
 {
-    const res = await sendRequest("/user", "POST", "Not added.", user_data);
+    const res = await sendRequest("/user", "POST", user_data);
     clear_user_data();
     return res;
 }
@@ -210,9 +222,12 @@ function addItem()
     closeForm();
 }
 
-async function doIfValidInput(func)
+async function doIfNotified(pred, func, params)
 {
-    if(await validateInputFields())
+    const check = params !== undefined
+        ? await pred(...params)
+        : await pred();
+    if(check)
     {
         func();
         notify("Success!", NotificationTypes["success"]);
@@ -221,6 +236,16 @@ async function doIfValidInput(func)
     {
         notify("Invalid input!", NotificationTypes["error"]);
     }
+}
+
+async function doIfValidInput(func, params)
+{
+    await doIfNotified(validateInputFields, func, params);
+}
+
+async function doIfValidInputEdit(func, params)
+{
+    await doIfNotified(validateEditInputFields, func, params);
 }
 
 function onAddButton()
@@ -241,7 +266,7 @@ function onAddButton()
 
 async function getAllUsers()
 {
-    return sendRequest("/users", "GET", "DB error.");
+    return sendRequest("/users", "GET");
 }
 
 function getLocalUserId(id)
@@ -265,10 +290,10 @@ function addUsers(users)
 
 async function dbDeleteRow(email)
 {
-    return await sendRequest(`/user/email/${email}`, "DELETE", "Not deleted.");
+    return await sendRequest(`/user/email/${email}`, "DELETE");
 }
 
-function dbEditRow(email)
+async function dbEditRow(email)
 {
     const body = {
         _email: email,
@@ -277,7 +302,7 @@ function dbEditRow(email)
         lastname: lastname_inp.value,
         email: email_inp.value
     };
-    sendRequest("/user", "PATCH", "Not edited.", body);
+    return await sendRequest("/user", "PATCH", body);
 }
 
 function getButtonRow(target)
@@ -350,8 +375,14 @@ function onRowEdit(event)
 
     function _dbEditRow()
     {
-        doIfValidInput(() => {
-            dbEditRow(getEmail(row));
+        doIfValidInputEdit(async () => {
+            const res = await dbEditRow(getEmail(row));
+            if(!res.ok)
+            {
+                notify("Not edited.", NotificationTypes["error"]);
+                return;
+            }
+
             const inputs = Array.from([
                 surname_inp, 
                 name_inp, 
@@ -366,7 +397,7 @@ function onRowEdit(event)
             
             edit_button.removeEventListener("click", _dbEditRow);
             closeForm();
-        });
+        }, [row]);
     }
 }
 
@@ -389,7 +420,7 @@ async function sendLetter(toEmailAddress)
         text:       letter_area.value
     };
     
-    const res = await sendRequest("/letter", "POST", "", body);
+    const res = await sendRequest("/letter", "POST", body);
     return res.ok;
 }
 
@@ -445,7 +476,7 @@ async function dbRefreshListOfUsers()
 }
 
 async function checkIfServerIsRunning() {
-    const check = await sendRequest("/status", "GET", "Server error.");
+    const check = await sendRequest("/status", "GET");
     return check.ok;
 }
 
