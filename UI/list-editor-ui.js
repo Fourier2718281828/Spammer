@@ -141,7 +141,8 @@ function clearFields()
 async function isUniqueEmail(email)
 {
     const found = await sendRequest(`/user/email/${email}`, "GET");
-    return !found.ok;
+    const foundJSON = await found.json();
+    return foundJSON.found === null;
 }
 
 function validateEmail(email)
