@@ -3,7 +3,7 @@ const cors = require('cors');
 const app = express();
 const bodyParser = require("body-parser");
 const PORT = 8000;
-const sendLetter = require("./letter-sender");
+const { sendLetter } = require("./letter-sender");
 const {
     saveRow,
     allRows,
@@ -69,7 +69,6 @@ app.get("/user/email/:email", async (req, res) => {
     try {
         const email = req.params.email;
         const found = await findByEmail(email);
-        console.log("found server:",found);
         if(found)
             res.status(200).send(found);
         else
@@ -95,23 +94,10 @@ app.delete("/user/email/:email", async (req, res) => {
     }
 });
 
-app.get("/film/name/:name", async (req, res) => {
-    try {
-        const name = req.params.name;
-        const result = await findFilmsByName(name);
-        if(!result)
-            res.send(`No film with name ${name} was found.`);
-        else
-            res.send(result);
-    }
-    catch (err) {
-        res.send(`Find error: ${ err.message }.`);
-    }
-});
-
 app.post("/letter", async (req, res) => {
     try {
-        const body = res.body;
+        console.log("server body:", req.body);
+        const body = req.body;
         const myEmail = body.myEmail;
         const myPassword = body.myPassword;
         const toEmail = body.toEmail;

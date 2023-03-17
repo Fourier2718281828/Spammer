@@ -23,6 +23,9 @@ const email_inp = document.getElementById("email_inp");
 const notification = document.getElementById("notification");
 //
 const message_sender = document.getElementById("message_sender");
+const input_email = document.getElementById("input_email");
+const inputPassword5 = document.getElementById("inputPassword5");
+const letter_title = document.getElementById("letter_title");
 const letter_area = document.getElementById("letter_area");
 const send_letter_button = document.getElementById("send_letter_button");
 const close_letter_button = document.getElementById("close_letter_button");
@@ -138,11 +141,7 @@ function clearFields()
 async function isUniqueEmail(email)
 {
     const found = await sendRequest(`/user/email/${email}`, "GET", "Server error.");
-    const foundJson = await found.json();
-    const foundEmail = foundJson.email;
-    console.log("found email =", foundEmail);
-    console.log("url =", `/user/email/${email}`);
-    return foundEmail == undefined;
+    return !found.ok;
 }
 
 function validateEmail(email)
@@ -153,13 +152,11 @@ function validateEmail(email)
 
 async function validateInputFields()
 {
-    const emailUnique = await isUniqueEmail(email_inp.value);
-    console.log("email is unique:", emailUnique);
     return  surname_inp.value  !== ""       &&
             name_inp.value     !== ""       &&
             lastname_inp.value !== ""       &&
             validateEmail(email_inp.value)  &&
-            emailUnique;
+            await isUniqueEmail(email_inp.value);
 }
 
 function notification_setup(text, type)
@@ -191,20 +188,11 @@ async function sendRequest(url, queryType, notificationErrorText, data)
             headers: {"content-type": "application/json"}, 
             body: JSON.stringify(data)
         });
-        
-        if(res.ok)
-        {
-            return res;
-        }
-        else
-        {
-            notify(notificationErrorText, NotificationTypes["error"]);
-            return false;
-        }
+
+        return res;
 
     } catch (err) {
-        console.log(err);
-        notify("Server is dead.", NotificationTypes["error"]);
+        notify("Server error.", NotificationTypes["error"]);
         return false;
     }
 }
@@ -355,6 +343,29 @@ function onRowEdit(event)
     }
 }
 
+function validateLetterInputs()
+{
+    return  input_email.value    !== ""  &&
+            inputPassword5.value !== ""  &&
+            letter_title.value   !== ""  &&
+            letter_area.value    !== ""  &&
+            validateEmail(input_email.value);
+}
+
+async function sendLetter(toEmailAddress)
+{
+    const body = {
+        myEmail:    input_email.value, 
+        myPassword: inputPassword5.value,
+        toEmail:    toEmailAddress,
+        title:      letter_title.value, 
+        text:       letter_area.value
+    };
+    
+    const res = await sendRequest("/letter", "POST", "", body);
+    return res.ok;
+}
+
 function clearLetterArea()
 {
     letter_area.value = "";
@@ -372,8 +383,25 @@ function onOpenInputLetter()
     clearLetterArea();
 }
 
-function onSendLetter()
+async function onSendLetter()
 {
+    if(validateLetterInputs())
+    {
+        let success = true;
+        for(let i = 0; i < table_body.children.length; ++i)
+        {
+            const row = table_body.children[i];
+            const toEmail = getEmail(row);
+            success &&= await sendLetter(toEmail);
+        }
+
+        if(success) notify("Success!", NotificationTypes["success"]);
+        else        notify("Some letters not sent!", NotificationTypes["error"]);
+    }
+    else
+    {
+        notify("Invalid input!", NotificationTypes["error"]);
+    }
 }
 
 async function dbRefreshListOfUsers()
@@ -390,15 +418,12 @@ async function dbRefreshListOfUsers()
 }
 
 async function checkIfServerIsRunning() {
-    return await sendRequest("/status", "GET", "Server error.");
+    const check = await sendRequest("/status", "GET", "Server error.");
+    return check.ok;
 }
 
-async function init()
+function setUpButtons()
 {
-    const serverIsRunning = await checkIfServerIsRunning();
-    if(!serverIsRunning) return;
-
-    dbRefreshListOfUsers();
     surname_inp.addEventListener("change", onFieldChanged);
     name_inp.addEventListener("change", onFieldChanged);
     lastname_inp.addEventListener("change", onFieldChanged);
@@ -411,6 +436,14 @@ async function init()
     send_letter_button.addEventListener("click", onSendLetter);
     close_letter_button.addEventListener("click", onCloseLetter);
     input_letter_button.addEventListener("click", onOpenInputLetter);
+}
+
+async function init()
+{
+    const serverIsRunning = await checkIfServerIsRunning();
+    if(!serverIsRunning) return;
+    await dbRefreshListOfUsers();
+    setUpButtons();
 }
 
 init();
