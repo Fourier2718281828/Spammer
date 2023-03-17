@@ -34,7 +34,7 @@ const RowSchema = new MongusSchema({
     },
     email: {
         type: String,
-        required: false,
+        required: true,
     },
 });
 
@@ -59,6 +59,11 @@ async function updateRow(email, updates)
     return updateResult;
 }
 
+async function findByEmail(emailToFind)
+{
+    const findResult = await row.findOne({ email: emailToFind });
+    return findResult;
+}
 
 async function deleteRow(emailToDelete)
 {
@@ -73,4 +78,5 @@ module.exports = {
     updateRow,
     deleteRow,
     dbSetUp,
+    findByEmail,
 }

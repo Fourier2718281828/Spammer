@@ -40,12 +40,16 @@
 
         <div id="message_sender">
           <div class="input-group">
-            <div class="input-group-prepend">
-              <span class="input-group-text">Your letter</span>
+            <div class="input_container" >
+              <div class="input_group_input">
+                <input id="input_email" class="form-control" placeholder="Your email">
+                <input type="password" id="inputPassword5" class="form-control" aria-describedby="passwordHelpBlock" placeholder="Password">
+                <input id="letter_title" class="form-control" placeholder="Letter title">
+              </div>
+              <textarea id="letter_area" class="form-control" aria-label="With textarea" placeholder="Your letter"></textarea>
             </div>
-            <textarea id="letter_area" class="form-control" aria-label="With textarea"></textarea>
           </div>
-          <button id="send_letter" type="button" class="btn btn-primary">Send</button>
+          <button id="send_letter_button" type="button" class="btn btn-primary">Send</button>
           <button id="close_letter_button" type="button" class="btn btn-danger">Close</button>
         </div>
 

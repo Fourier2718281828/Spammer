@@ -21,7 +21,13 @@ const lastname_inp = document.getElementById("lastname_inp");
 const email_inp = document.getElementById("email_inp");
 
 const notification = document.getElementById("notification");
-
+//
+const message_sender = document.getElementById("message_sender");
+const letter_area = document.getElementById("letter_area");
+const send_letter_button = document.getElementById("send_letter_button");
+const close_letter_button = document.getElementById("close_letter_button");
+const input_letter_button = document.getElementById("input_letter_button");
+//
 
 const NotificationTypes = Object.freeze({
     success: "success",
@@ -129,14 +135,31 @@ function clearFields()
     email_inp.value     = "";
 }
 
-function validateInputFields()
+async function isUniqueEmail(email)
 {
-    return !(
-                surname_inp.value  === ""  ||
-                name_inp.value     === ""  ||
-                lastname_inp.value === ""  ||
-                email_inp.value    === ""
-            );
+    const found = await sendRequest(`/user/email/${email}`, "GET", "Server error.");
+    const foundJson = await found.json();
+    const foundEmail = foundJson.email;
+    console.log("found email =", foundEmail);
+    console.log("url =", `/user/email/${email}`);
+    return foundEmail == undefined;
+}
+
+function validateEmail(email)
+{
+    const emailRegex = /^[\w-\.]+@([\w-]+\.)+[\w-]{2,4}$/;
+    return emailRegex.test(email);
+}
+
+async function validateInputFields()
+{
+    const emailUnique = await isUniqueEmail(email_inp.value);
+    console.log("email is unique:", emailUnique);
+    return  surname_inp.value  !== ""       &&
+            name_inp.value     !== ""       &&
+            lastname_inp.value !== ""       &&
+            validateEmail(email_inp.value)  &&
+            emailUnique;
 }
 
 function notification_setup(text, type)
@@ -160,21 +183,35 @@ function clear_user_data()
     user_data = {};
 }
 
-function sendQuery(url, queryType, data)
+async function sendRequest(url, queryType, notificationErrorText, data)
 {
-    return fetch(API + url, {
-        method: queryType, 
-        headers: {"content-type": "application/json"}, 
-        body: JSON.stringify(data)
-    });
+    try {
+        const res = await fetch(API + url, {
+            method: queryType, 
+            headers: {"content-type": "application/json"}, 
+            body: JSON.stringify(data)
+        });
+        
+        if(res.ok)
+        {
+            return res;
+        }
+        else
+        {
+            notify(notificationErrorText, NotificationTypes["error"]);
+            return false;
+        }
+
+    } catch (err) {
+        console.log(err);
+        notify("Server is dead.", NotificationTypes["error"]);
+        return false;
+    }
 }
 
-//What if server is not running but we add a member?
-//It would be added to the list but not to the db
-//await fetch?
 function addNewMemberAction()
 {
-    sendQuery("/user", "POST", user_data);
+    sendRequest("/user", "POST", "Not added.", user_data);
     clear_user_data();
 }
 
@@ -184,9 +221,9 @@ function addItem()
     closeForm();
 }
 
-function doIfValidInput(func)
+async function doIfValidInput(func)
 {
-    if(validateInputFields())
+    if(await validateInputFields())
     {
         func();
         notify("Success!", NotificationTypes["success"]);
@@ -206,9 +243,9 @@ function onAddButton()
     });
 }
 
-function getAllUsers()
+async function getAllUsers()
 {
-    return sendQuery("/users", "GET");
+    return sendRequest("/users", "GET", "DB error.");
 }
 
 function getLocalUserId(id)
@@ -230,24 +267,9 @@ function addUsers(users)
     }
 }
 
-function dbRefreshListOfUsers()
-{  
-    getAllUsers()
-        .then(res => res.json())
-        .then(users => {
-            const sorted = users.sort((u1, u2) => {
-                if(u1.email < u2.email) return -1;
-                if(u1.email > u2.email) return 1;
-                return 0;
-            })
-            addUsers(sorted);
-            user_count = sorted.length;
-        });
-}
-
 function dbDeleteRow(email)
 {
-    sendQuery(`/user/email/${email}`, "DELETE");
+    sendRequest(`/user/email/${email}`, "DELETE", "Not deleted.");
 }
 
 function dbEditRow(email)
@@ -259,7 +281,7 @@ function dbEditRow(email)
         lastname: lastname_inp.value,
         email: email_inp.value
     };
-    sendQuery("/user", "PATCH", body);
+    sendRequest("/user", "PATCH", "Not edited.", body);
 }
 
 function getButtonRow(target)
@@ -333,13 +355,62 @@ function onRowEdit(event)
     }
 }
 
-surname_inp.addEventListener("change", onFieldChanged);
-name_inp.addEventListener("change", onFieldChanged);
-lastname_inp.addEventListener("change", onFieldChanged);
-email_inp.addEventListener("change", onFieldChanged);
+function clearLetterArea()
+{
+    letter_area.value = "";
+}
 
-form_open_button.addEventListener("click", showAddForm);
-add_button.addEventListener("click", onAddButton);
-close_button.addEventListener("click", closeForm);
+function onCloseLetter()
+{
+    hide(message_sender);
+    clearLetterArea();
+}
 
-dbRefreshListOfUsers();
+function onOpenInputLetter()
+{
+    show(message_sender);
+    clearLetterArea();
+}
+
+function onSendLetter()
+{
+}
+
+async function dbRefreshListOfUsers()
+{  
+    const res = await getAllUsers()
+    const users = await res.json();
+    const sorted = users.sort((u1, u2) => {
+        if(u1.email < u2.email) return -1;
+        if(u1.email > u2.email) return 1;
+        return 0;
+    })
+    addUsers(sorted);
+    user_count = sorted.length;
+}
+
+async function checkIfServerIsRunning() {
+    return await sendRequest("/status", "GET", "Server error.");
+}
+
+async function init()
+{
+    const serverIsRunning = await checkIfServerIsRunning();
+    if(!serverIsRunning) return;
+
+    dbRefreshListOfUsers();
+    surname_inp.addEventListener("change", onFieldChanged);
+    name_inp.addEventListener("change", onFieldChanged);
+    lastname_inp.addEventListener("change", onFieldChanged);
+    email_inp.addEventListener("change", onFieldChanged);
+
+    form_open_button.addEventListener("click", showAddForm);
+    add_button.addEventListener("click", onAddButton);
+    close_button.addEventListener("click", closeForm);
+
+    send_letter_button.addEventListener("click", onSendLetter);
+    close_letter_button.addEventListener("click", onCloseLetter);
+    input_letter_button.addEventListener("click", onOpenInputLetter);
+}
+
+init();
