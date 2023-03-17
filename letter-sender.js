@@ -3,6 +3,12 @@ const mailService = 'gmail';
 
 async function sendLetter(myEmail, myPassword, toEmail, title, text)
 {
+    console.log("myEmail", myEmail);
+    console.log("myPassword", myPassword);
+    console.log("toEmail", toEmail);
+    console.log("title", title);
+    console.log("text", text);
+
     let transporter = nodemailer.createTransport({
         service: mailService,
         auth: {
